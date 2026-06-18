@@ -4,5 +4,5 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [tailwindcss(), react()],
-  base: '/Punklorde-Lv9999/',
+  base: process.env.NODE_ENV === 'production' ? '/Punklorde-Lv9999/' : '/',
 })
