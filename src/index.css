@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Orbitron:wght@400;700;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-bg:        #05080f;
+  --color-surface:   #0d1420;
+  --color-surface2:  #111b2e;
+  --color-cyan:      #00d4ff;
+  --color-cyan-dim:  #4fc3f7;
+  --color-text:      #e8edf5;
+  --color-muted:     #7a8fa6;
+  --color-gold:      #f0c060;
+  --color-success:   #22c55e;
+  --color-danger:    #ef4444;
+
+  --color-str: #ef4444;
+  --color-int: #4fc3f7;
+  --color-cha: #ec4899;
+  --color-wea: #f0c060;
+  --color-dex: #22c55e;
+  --color-vit: #14b8a6;
+  --color-fun: #a78bfa;
+
+  --font-sans:    'Noto Sans JP', system-ui, sans-serif;
+  --font-display: 'Rajdhani', 'Orbitron', sans-serif;
+  --font-mono:    'Orbitron', monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background-color: #05080f;
+  color: #e8edf5;
+  font-family: 'Noto Sans JP', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── ホログラフィックパネル ─── */
+.panel-holo {
+  background: rgba(13, 20, 32, 0.85);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  backdrop-filter: blur(8px);
+}
+
+.panel-holo-active {
+  border-color: #00d4ff;
+  box-shadow: 0 0 8px #00d4ff60, inset 0 0 16px rgba(0, 212, 255, 0.06);
+}
+
+/* ─── グロー付きEXPバー ─── */
+.bar-glow {
+  box-shadow: 0 0 6px currentColor;
+}
+
+/* ─── スクロールバー ─── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0d1420; }
+::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.3); border-radius: 2px; }
