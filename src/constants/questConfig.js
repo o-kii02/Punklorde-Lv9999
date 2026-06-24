@@ -1,13 +1,16 @@
 export const DAILY_QUEST_POOL = [
   { id: 'dq_str_1', title: '筋トレを行う', category: 'STR', difficulty: 3 },
-  { id: 'dq_str_2', title: 'スクワッド 50回', category: 'STR', difficulty: 3 },
+  { id: 'dq_str_2', title: 'スクワッド 50回', category: 'STR', difficulty: 2 },
+  { id: 'dq_str_3', title: 'インナーマッスル 3セット', category: 'STR', difficulty: 2 },
   { id: 'dq_int_1', title: '読書 1時間', category: 'INT', difficulty: 2 },
   { id: 'dq_int_2', title: '勉強 1時間', category: 'INT', difficulty: 4 },
-  { id: 'dq_wea_1', title: '支出を記録する', category: 'WEA', difficulty: 1 },
-  { id: 'dq_men_1', title: '部屋の片づけをする', category: 'DEX', difficulty: 3 },
+  { id: 'dq_wea_1', title: '支出を確認する', category: 'WEA', difficulty: 1 },
+  { id: 'dq_dex_1', title: '部屋の片づけをする', category: 'DEX', difficulty: 3 },
+  { id: 'dq_dex_2', title: '料理をする', category: 'DEX', difficulty: 4 },
   { id: 'dq_cha_1', title: 'スキンケアに気を配る', category: 'CHA', difficulty: 1 },
-  { id: 'dq_dex_1', title: '人と円滑にコミュニケーションを取る', category: 'CHA', difficulty: 2 },
-  { id: 'dq_dex_1', title: '自分の時間を確保し、リラックスする', category: 'CHA', difficulty: 2 },
+  { id: 'dq_cha_2', title: '人と円滑にコミュニケーションを取る', category: 'CHA', difficulty: 2 },
+  { id: 'dq_men_1', title: 'リラックスする時間を確保する', category: 'MEN', difficulty: 2 },
+  { id: 'dq_men_2', title: '満足できる睡眠時間を確保する', category: 'MEN', difficulty: 2 },
 ];
 
 export const DAILY_QUEST_COUNT = 3;
