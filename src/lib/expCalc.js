@@ -7,10 +7,10 @@ export const calcRecordExp = ({ difficulty, count, isFirstTime }) => {
   return exp;
 };
 
-// Lv = floor(sqrt(totalExp / 50)) + 1
-export const expToLevel = (exp) => Math.floor(Math.sqrt(Math.max(0, exp) / 50)) + 1;
+// Lv = floor(sqrt(totalExp / 1.5)) + 1  (係数1.5: 500EXP/日で約8.2年でLv999)
+export const expToLevel = (exp) => Math.floor(Math.sqrt(Math.max(0, exp) / 1.5)) + 1;
 
-export const levelToRequiredExp = (lv) => (lv - 1) ** 2 * 50;
+export const levelToRequiredExp = (lv) => (lv - 1) ** 2 * 1.5;
 
 export const expProgress = (exp) => {
   const lv = expToLevel(exp);

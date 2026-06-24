@@ -78,11 +78,11 @@ RecordPage では `[...SKILL_PRESETS[cat], ...customSkills[cat]]` をマージ�
 ```js
 // src/constants/characterStages.js
 export const CHARACTER_STAGES = [
-  { minTotalLv: 0,   stage: 1, label: "見習い冒険者",       image: "char_stage1.png" },
-  { minTotalLv: 50,  stage: 2, label: "一人前の冒険者",     image: "char_stage2.png" },
-  { minTotalLv: 150, stage: 3, label: "熟練者",             image: "char_stage3.png" },
-  { minTotalLv: 300, stage: 4, label: "英雄",               image: "char_stage4.png" },
-  { minTotalLv: 999, stage: 5, label: "伝説のパンクロード", image: "char_stage5.png" },
+  { minTotalLv: 0,   stage: 1, label: "ウルフロード",       image: "char_stage1.png" },
+  { minTotalLv: 150,  stage: 2, label: "パンクロードの覇者",     image: "char_stage2.png" },
+  { minTotalLv: 300, stage: 3, label: "星核ハンター",             image: "char_stage3.png" },
+  { minTotalLv: 500, stage: 4, label: "愉悦の使令",               image: "char_stage4.png" },
+  { minTotalLv: 900, stage: 5, label: "ポルカカカム", image: "char_stage5.png" },
 ];
 
 // 全体Lvから現在のステージを返す

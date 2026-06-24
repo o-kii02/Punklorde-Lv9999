@@ -13,6 +13,7 @@ export const GameProvider = ({ children }) => {
   const [records, setRecords] = useState([]);
   const [financeRecords, setFinanceRecords] = useState(() => mock.getFinanceRecords());
   const [customSkills, setCustomSkills] = useState({});
+  const [levelUpQueue, setLevelUpQueue] = useState([]);
 
   useEffect(() => {
     if (!user) {
@@ -70,9 +71,20 @@ export const GameProvider = ({ children }) => {
   const totalLevel = useMemo(() => expToLevel(totalExp), [totalExp]);
   const totalProgress = useMemo(() => expProgress(totalExp), [totalExp]);
 
+  const pushLevelUp = (prevExp, gainedExp) => {
+    const prevLv = expToLevel(prevExp);
+    const nextLv = expToLevel(prevExp + gainedExp);
+    if (nextLv > prevLv) {
+      setLevelUpQueue((q) => [...q, nextLv]);
+    }
+  };
+
+  const dismissLevelUp = () => setLevelUpQueue((q) => q.slice(1));
+
   const addRecord = async (formData) => {
     const expGained = calcRecordExp(formData);
     const data = { ...formData, expGained };
+    pushLevelUp(totalExp, expGained);
     if (user) {
       await fs.addRecord(user.uid, data);
       // subscribeRecords が自動で setRecords を更新するため手動更新不要
@@ -107,6 +119,7 @@ export const GameProvider = ({ children }) => {
 
   const addExp = async (category, amount) => {
     const data = { category, difficulty: 0, expGained: amount, note: 'クエスト達成', type: 'quest' };
+    pushLevelUp(totalExp, amount);
     if (user) {
       const recordId = await fs.addRecord(user.uid, data);
       return { ...data, id: recordId };
@@ -145,6 +158,7 @@ export const GameProvider = ({ children }) => {
       addRecord, editRecord, removeRecord, addExp,
       financeRecords, addFinanceRecord, removeFinanceRecord, weaFinanceExp,
       customSkills, addCustomSkillEntry,
+      levelUpQueue, dismissLevelUp,
     }}>
       {children}
     </GameContext.Provider>

@@ -2,6 +2,7 @@ import { HashRouter as BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { GameProvider } from './context/GameContext';
 import BottomNav from './components/layout/BottomNav';
+import LevelUpModal from './components/common/LevelUpModal';
 import Dashboard from './pages/Dashboard';
 import RecordPage from './pages/RecordPage';
 import RecordsPage from './pages/RecordsPage';
@@ -43,6 +44,7 @@ function AppRoutes() {
           <Route path="/login"   element={<LoginPage />} />
         </Routes>
         <BottomNav />
+        <LevelUpModal />
       </div>
     </GameProvider>
   );
