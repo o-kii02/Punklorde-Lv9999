@@ -1,14 +1,15 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   DAILY_QUEST_POOL,
   DAILY_QUEST_COUNT,
   DIFFICULTY_EXP,
 } from '../constants/questConfig';
+import { useAuth } from '../context/AuthContext';
+import { getDailyQuests, setDailyQuests } from '../lib/firestore';
 
 const RANDOM_KEY = 'punk_daily_quests';
 const CUSTOM_KEY = 'punk_custom_quests';
 
-// 朝5時を境にリセット日付を算出
 function resetDateStr() {
   const now = new Date();
   const base = new Date(now);
@@ -21,7 +22,8 @@ function pickRandom(pool, count) {
   return shuffled.slice(0, count).map((q) => ({ ...q, isCompleted: false }));
 }
 
-function loadRandomQuests() {
+// localStorage fallback
+function loadLocalRandom() {
   try {
     const raw = JSON.parse(localStorage.getItem(RANDOM_KEY) ?? 'null');
     if (!raw || raw.date !== resetDateStr()) {
@@ -36,11 +38,11 @@ function loadRandomQuests() {
   }
 }
 
-function saveRandomQuests(quests) {
+function saveLocalRandom(quests) {
   localStorage.setItem(RANDOM_KEY, JSON.stringify({ date: resetDateStr(), quests }));
 }
 
-function loadCustomQuests() {
+function loadLocalCustom() {
   try {
     const all = JSON.parse(localStorage.getItem(CUSTOM_KEY) ?? '[]');
     const now = Date.now();
@@ -50,36 +52,75 @@ function loadCustomQuests() {
   }
 }
 
-function saveCustomQuests(quests) {
+function saveLocalCustom(quests) {
   localStorage.setItem(CUSTOM_KEY, JSON.stringify(quests));
 }
 
 export function useDailyQuests(addExp) {
-  const [randomQuests, setRandomQuests] = useState(() => loadRandomQuests());
-  const [customQuests, setCustomQuests] = useState(() => loadCustomQuests());
+  const { user } = useAuth();
+  const [randomQuests, setRandomQuests] = useState([]);
+  const [customQuests, setCustomQuests] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+  const saveTimerRef = useRef(null);
 
-  // チェックのみ（EXPなし）
+  // 初回ロード
+  useEffect(() => {
+    if (!user) {
+      setRandomQuests(loadLocalRandom());
+      setCustomQuests(loadLocalCustom());
+      setLoaded(true);
+      return;
+    }
+    getDailyQuests(user.uid).then((data) => {
+      const today = resetDateStr();
+      if (!data || data.date !== today) {
+        const quests = pickRandom(DAILY_QUEST_POOL, DAILY_QUEST_COUNT);
+        const newData = { date: today, randomQuests: quests, customQuests: data?.customQuests ?? [] };
+        setDailyQuests(user.uid, newData);
+        setRandomQuests(quests);
+        setCustomQuests(data?.customQuests ?? []);
+      } else {
+        setRandomQuests(data.randomQuests ?? []);
+        setCustomQuests(data.customQuests ?? []);
+      }
+      setLoaded(true);
+    });
+  }, [user]);
+
+  // Firestoreへの保存（debounce）
+  const saveToFirestore = useCallback((nextRandom, nextCustom) => {
+    if (!user) return;
+    clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      setDailyQuests(user.uid, {
+        date: resetDateStr(),
+        randomQuests: nextRandom,
+        customQuests: nextCustom,
+      });
+    }, 500);
+  }, [user]);
+
   const toggleRandomQuest = useCallback((id) => {
     setRandomQuests((prev) => {
       const next = prev.map((q) => q.id === id ? { ...q, isCompleted: !q.isCompleted } : q);
-      saveRandomQuests(next);
+      if (user) saveToFirestore(next, customQuests);
+      else saveLocalRandom(next);
       return next;
     });
-  }, []);
+  }, [user, customQuests, saveToFirestore]);
 
-  // チェック済みクエストをEXP付与して非表示化
   const clearDailyQuests = useCallback(() => {
     setRandomQuests((prev) => {
       prev.filter((q) => q.isCompleted).forEach((q) => {
         if (addExp) addExp(q.category, DIFFICULTY_EXP[q.difficulty] ?? 0);
       });
       const next = prev.map((q) => q.isCompleted ? { ...q, isCompleted: false, isCleared: true } : q);
-      saveRandomQuests(next);
+      if (user) saveToFirestore(next, customQuests);
+      else saveLocalRandom(next);
       return next;
     });
-  }, [addExp]);
+  }, [addExp, user, customQuests, saveToFirestore]);
 
-  // Dashboard互換
   const toggle = useCallback((id) => toggleRandomQuest(id), [toggleRandomQuest]);
 
   const addCustomQuest = useCallback(({ title, category, difficulty, expiryDays }) => {
@@ -97,53 +138,56 @@ export function useDailyQuests(addExp) {
     };
     setCustomQuests((prev) => {
       const next = [...prev, quest];
-      saveCustomQuests(next);
+      if (user) saveToFirestore(randomQuests, next);
+      else saveLocalCustom(next);
       return next;
     });
-  }, []);
+  }, [user, randomQuests, saveToFirestore]);
 
-  // カスタムクエストのチェックのみ（EXPなし）
   const toggleCustomQuest = useCallback((id) => {
     setCustomQuests((prev) => {
       const next = prev.map((q) => q.id === id ? { ...q, isCompleted: !q.isCompleted } : q);
-      saveCustomQuests(next);
+      if (user) saveToFirestore(randomQuests, next);
+      else saveLocalCustom(next);
       return next;
     });
-  }, []);
+  }, [user, randomQuests, saveToFirestore]);
 
-  // チェック済みカスタムクエストをEXP付与して削除
   const clearCustomQuests = useCallback(() => {
     setCustomQuests((prev) => {
       prev.filter((q) => q.isCompleted).forEach((q) => {
         if (addExp) addExp(q.category, DIFFICULTY_EXP[q.difficulty] ?? 0);
       });
       const next = prev.filter((q) => !q.isCompleted);
-      saveCustomQuests(next);
+      if (user) saveToFirestore(randomQuests, next);
+      else saveLocalCustom(next);
       return next;
     });
-  }, [addExp]);
+  }, [addExp, user, randomQuests, saveToFirestore]);
 
   const deleteCustomQuest = useCallback((id) => {
     setCustomQuests((prev) => {
       const next = prev.filter((q) => q.id !== id);
-      saveCustomQuests(next);
+      if (user) saveToFirestore(randomQuests, next);
+      else saveLocalCustom(next);
       return next;
     });
-  }, []);
+  }, [user, randomQuests, saveToFirestore]);
 
+  const now = Date.now();
+  const activeCustom = customQuests.filter((q) => q.expiresAt === null || q.expiresAt > now);
   const visibleRandomQuests = randomQuests.filter((q) => !q.isCleared);
   const randomCompletedCount = visibleRandomQuests.filter((q) => q.isCompleted).length;
   const allRandomDone = visibleRandomQuests.length > 0 && randomCompletedCount === visibleRandomQuests.length;
 
-  // Dashboard互換フィールド
   const quests = visibleRandomQuests.map((q) => ({ ...q, label: q.title, done: q.isCompleted }));
   const completedCount = randomCompletedCount;
   const total = visibleRandomQuests.length;
 
   return {
-    // QuestPage用
+    loaded,
     randomQuests: visibleRandomQuests,
-    customQuests,
+    customQuests: activeCustom,
     toggleRandomQuest,
     clearDailyQuests,
     toggleCustomQuest,
@@ -152,7 +196,6 @@ export function useDailyQuests(addExp) {
     deleteCustomQuest,
     randomCompletedCount,
     allRandomDone,
-    // Dashboard互換
     quests,
     toggle,
     completedCount,

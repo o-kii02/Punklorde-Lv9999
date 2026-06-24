@@ -13,6 +13,8 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 
+const dailyQuestsDoc = (uid) => doc(db, 'users', uid, 'meta', 'dailyQuests');
+
 const recordsCol = (uid) => collection(db, 'users', uid, 'records');
 const skillsDoc = (uid) => doc(db, 'users', uid, 'meta', 'skills');
 
@@ -44,6 +46,16 @@ export const deleteRecord = async (uid, id) => {
 export const getCustomSkills = async (uid) => {
   const snap = await getDoc(skillsDoc(uid));
   return snap.exists() ? snap.data() : {};
+};
+
+// Daily quests
+export const getDailyQuests = async (uid) => {
+  const snap = await getDoc(dailyQuestsDoc(uid));
+  return snap.exists() ? snap.data() : null;
+};
+
+export const setDailyQuests = async (uid, data) => {
+  await setDoc(dailyQuestsDoc(uid), data);
 };
 
 export const addCustomSkill = async (uid, category, skillName) => {
