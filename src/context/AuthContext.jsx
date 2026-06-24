@@ -8,7 +8,14 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(undefined); // undefined = loading
 
   useEffect(() => {
-    return onAuthStateChanged(auth, setUser);
+    return onAuthStateChanged(auth, (u) => {
+      if (u && u.email !== 'kiichi.021224@gmail.com') {
+        signOut(auth);
+        setUser(null);
+      } else {
+        setUser(u);
+      }
+    });
   }, []);
 
   const login = () => signInWithPopup(auth, googleProvider);
